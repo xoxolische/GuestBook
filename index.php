@@ -89,6 +89,7 @@ if(!empty($_GET)){
                 <th>Text</th>
                 <th>IP</th>
                 <th>Browser</th>
+                <th>File</th>
             </tr>
             </thead>
             <tbody>
@@ -108,6 +109,7 @@ if(!empty($_GET)){
                 echo '<td>'. $obj->getMessage() . '</td>';
                 echo '<td>'. $obj->getIp() . '</td>';
                 echo '<td>'. $obj->getBrowser() . '</td>';
+                echo '<td> <a href="download.php?file='.$obj->getFileName().'">'.$obj->getFileName() . '</a></td>';
                 echo '</tr>';
             }
             ?>

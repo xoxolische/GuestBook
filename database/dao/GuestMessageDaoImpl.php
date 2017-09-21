@@ -55,9 +55,9 @@ class GuestMessageDaoImpl implements IDao
     {
         $pdo = Database::connect();
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $sql = "INSERT INTO entry (username, email, homepage, text, ip, browser) values(?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO entry (username, email, homepage, text, ip, browser, file) values(?, ?, ?, ?, ?, ?, ?)";
         $q = $pdo->prepare($sql);
-        $q->execute(array($object->getUserName(), $object->getEmail(), $object->getHomePage(), $object->getMessage(), $object->getIp(), $object->getBrowser()));
+        $q->execute(array($object->getUserName(), $object->getEmail(), $object->getHomePage(), $object->getMessage(), $object->getIp(), $object->getBrowser(), $object->getFileName()));
         Database::disconnect();
     }
 

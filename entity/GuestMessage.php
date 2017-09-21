@@ -16,6 +16,7 @@ class GuestMessage
     private $date;
     private $ip;
     private $browser;
+    private $fileName;
 
 
     private function __construct()
@@ -56,6 +57,7 @@ class GuestMessage
         $object->ip = $row['ip'];
         $object->browser = $row['browser'];
         $object->date = $row['date'];
+        $object->fileName = $row['file'];
         return $object;
     }
 
@@ -159,6 +161,18 @@ class GuestMessage
     public function setDate($date)
     {
         $this->date = $date;
+    }
+
+
+    public function getFileName()
+    {
+        return $this->fileName;
+    }
+
+
+    public function setFileName($fileName)
+    {
+        $this->fileName = $fileName;
     }
 
 

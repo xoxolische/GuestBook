@@ -29,29 +29,41 @@ if (!empty($_POST)) {
     if ($response != null && $response->success) {
 
         $userName = $_POST['username'];
-        $email = $_POST['email'];
+        if (!preg_match('/[^A-Za-z0-9]/', $userName)){
+            $email = $_POST['email'];
 
-        $message = strip_tags($_POST['text']);
-        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-            $userIp = $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $userIp = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else {
-            $userIp = $_SERVER['REMOTE_ADDR'];
+            $message = strip_tags($_POST['text']);
+            if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+                $userIp = $_SERVER['HTTP_CLIENT_IP'];
+            } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+                $userIp = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            } else {
+                $userIp = $_SERVER['REMOTE_ADDR'];
+            }
+
+            $userBrowser = $_SERVER['HTTP_USER_AGENT'];
+            $guest = null;
+            if (isset($_POST['homepage'])) {
+                $homepage = $_POST['homepage'];
+                $guest = GuestMessage::newGuestMessageFromClientWithHomePage($userName, $email, $homepage, $message, $userIp, $userBrowser);
+            } else {
+                $homepage = null;
+                $guest = GuestMessage::newGuestMessageFromClientNoHomePage($userName, $email, $message, $userIp, $userBrowser);
+            }
+            if (!empty($_FILES)) {
+                if ($_FILES['file']['type'] == 'text/plain') {
+                    $fName = uniqid();
+                    $guest->setFileName($fName);
+                    move_uploaded_file($_FILES["file"]["tmp_name"],'./files/'.$fName.'.txt');
+                }
+            }
+            $guestMessageDao = new GuestMessageDaoImpl();
+            $guestMessageDao->add($guest);
+            header("Refresh:0; url=index.php");
+        }else{
+            echo 'Only english characters allowed!';
         }
 
-        $userBrowser = $_SERVER['HTTP_USER_AGENT'];
-        $guest = null;
-        if (isset($_POST['homepage'])) {
-            $homepage = $_POST['homepage'];
-            $guest = GuestMessage::newGuestMessageFromClientWithHomePage($userName, $email, $homepage, $message, $userIp, $userBrowser);
-        } else {
-            $homepage = null;
-            $guest = GuestMessage::newGuestMessageFromClientNoHomePage($userName, $email, $message, $userIp, $userBrowser);
-        }
-        $guestMessageDao = new GuestMessageDaoImpl();
-        $guestMessageDao->add($guest);
-        header("Refresh:0; url=index.php");
     } else {
         echo "Bad captcha!!!";
     }
@@ -95,6 +107,12 @@ if (!empty($_POST)) {
                     <textarea class="form-control" rows="3" id="text" name="text" required></textarea>
                 </div>
 
+                <div class="form-group">
+                    <input type="hidden" name="MAX_FILE_SIZE" value="100000"/>
+                    <!-- Название элемента input определяет имя в массиве $_FILES -->
+                    Upload file: <input name="file" type="file"/>
+                </div>
+
                 <div class="g-recaptcha col-md-12" data-sitekey="6Le1azEUAAAAAEo0-gvtjtyq_kAIgMgS_-xJtLQr"></div>
 
                 <div class="form-group">
@@ -102,12 +120,6 @@ if (!empty($_POST)) {
                     <a href="index.php" class="btn btn-info col-md-6">Back</a>
                 </div>
 
-                <div class="form-group">
-                    <input type="hidden" name="MAX_FILE_SIZE" value="100000"/>
-                    <!-- Название элемента input определяет имя в массиве $_FILES -->
-                    Отправить этот файл: <input name="userfile" type="file"/>
-                    <input type="submit" value="Send File"/>
-                </div>
             </form>
             <script src='https://www.google.com/recaptcha/api.js'></script>
         </div>
